@@ -41,12 +41,7 @@ curl -X POST -u admin:admin http://localhost:8080/SEMP/v2/config/msgVpns/default
     -H "content-type: application/json" -d \
     '{"msgVpnName" :"default","queueName":"API_RQ", "permission":"consume", "ingressEnabled":true, "egressEnabled":true, "respectTtlEnabled":true, "maxTtl":10}'
 ```
-Create the queue **API_RQ** on the broker that will get a copy of all the API requests.
-```shell
-curl -X POST -u admin:admin http://localhost:8080/SEMP/v2/config/msgVpns/default/queues \
-    -H "content-type: application/json" -d \
-    '{"msgVpnName" :"default","queueName":"API_RQ", "permission":"consume", "ingressEnabled":true, "egressEnabled":true, "respectTtlEnabled":true, "maxTtl":10}'
-```
+
 Setup the subscriptions in the queue for API requests. For this initial setup we are using a single queue, but for a scenario where the REST microservices are available at different endpoints you should create multiple qeueus. This is explained later.
 ```shell
 curl -X POST -u admin:admin http://localhost:8080/SEMP/v2/config/msgVpns/default/queues/API_RQ/subscriptions \
@@ -84,11 +79,29 @@ Verify that you are able to now send the REST request
 curl http://localhost:9000/get
 ```
 
+You should get a response similar to which means that request has gone from your client all the way to httpbin.org and back.
+```shell
+{
+  "args": {},
+  "headers": {
+    "Accept": "*/*",
+    "Host": "httpbin.org",
+    "Solace-Delivery-Mode": "Non-Persistent",
+    "Solace-Message-Id": "ID:Solace-704ca5d897cea4f2",
+    "Solace-Reply-Wait-Time-In-Ms": "FOREVER",
+    "Solace-Time-To-Live-In-Ms": "30000",
+    "User-Agent": "curl/7.64.1"
+  },
+  "origin": "103.252.202.112, 103.252.202.112",
+  "url": "https://httpbin.org/get"
+}
+```
 
-#Rest Consumer target URL http://backend-server:port/get/AA
-curl -X POST -u admin:admin $vmr_ip:8080/SEMP/v2/config/msgVpns/default/restDeliveryPoints/aa/restConsumers  -H "content-type: application/json" -d '{"msgVpnName":"default","restConsumerName":"backend_aa" ,"restDeliveryPointName":"aa" ,"remoteHost":"'"$backend_ip"'","remotePort":1981, "tlsEnabled":false, "enabled":true}'
+### So what's the big deal here
+All API requests are now event enabled. You can have a concurrent messaging application listening to topic "GET/>" or "POST/>" to get a copy of the messages and do asynchonous processing e.g. analytics, machine learning etc.
 
-
+### Multiple μservices
+Instead of having a single queue you can have multiple queues. For e.g. API_CUST_RQ can subscribe to **GET/customer/>** to handle the API requests for **customer** as the bounded context, and another queue API_PAY_RQ can subscribe to **POST/pay/>** to handle the requests for **payment** domain.
 
 
 ## Backend μservices using Messaging
