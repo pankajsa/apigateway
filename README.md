@@ -15,7 +15,7 @@ This repository explains the setup and how it can be implemented using simple cu
 Steps
 ### Running Solace PubSub+ as Docker Container
 '''shell
-ls -la
+        ls -la
 '''
 
 ## Backend μservices using Messaging
