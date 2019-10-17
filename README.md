@@ -105,6 +105,9 @@ Instead of having a single queue you can have multiple queues. For e.g. API_CUST
 
 
 ## Backend μservices using Messaging
+@todo
+
 ## API G/W in DMZ and Backend μservices using Messaging (preferred)
+@todo
 
 
